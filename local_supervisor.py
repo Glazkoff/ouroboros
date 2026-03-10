@@ -265,23 +265,63 @@ def handle_command(tg_client, chat_id: int, text: str, repo_dir: pathlib.Path, d
 # 7) Message handler
 # ============================
 def handle_message(tg_client, chat_id: int, text: str, repo_dir: pathlib.Path, data_dir: pathlib.Path):
-    """Handle regular message."""
+    """Handle regular message using the real agent."""
     from supervisor import workers as workers_module
+    from supervisor import state as state_module
     from supervisor import events as events_module
 
     try:
         # Send typing indicator
         tg_client.send_chat_action(chat_id, "typing")
 
-        # Handle as direct chat
-        workers_module.handle_chat_direct(chat_id, text)
+        # Use real agent via workers module
+        log.info(f"Processing message with agent: {text[:50]}...")
 
-        # Wait for response (simplified - no workers in local mode yet)
-        time.sleep(2)
+        # Create task for agent
+        task = {
+            "id": uuid.uuid4().hex[:8],
+            "type": "task",
+            "chat_id": chat_id,
+            "text": text,
+            "_is_direct_chat": True,
+        }
 
-        # For now, just acknowledge
-        # TODO: Integrate with agent.py for real responses
-        tg_client.send_message(chat_id, f"✅ Received: {text[:100]}\n\n⚠️ Full agent integration coming soon. Use Colab for complete functionality.")
+        # Get agent (lazy init)
+        agent = workers_module._get_chat_agent()
+
+        # Process with agent
+        events = agent.handle_task(task)
+
+        # Process events from agent
+        response_sent = False
+        for event in events:
+            event_type = event.get("type")
+
+            # Log event
+            log.debug(f"Agent event: {event_type}")
+
+            # Send response to Telegram
+            if event_type == "telegram_send":
+                msg_text = event.get("text", "")
+                if msg_text and not response_sent:
+                    # Send response
+                    ok, err = tg_client.send_message(chat_id, msg_text)
+                    if ok:
+                        response_sent = True
+                        log.info(f"✅ Response sent ({len(msg_text)} chars)")
+                    else:
+                        log.error(f"Failed to send message: {err}")
+
+            # Update state with usage
+            elif event_type == "llm_usage":
+                usage = event.get("usage", {})
+                state_module.update_budget_from_usage(usage)
+                log.debug(f"Budget updated: {usage}")
+
+        # Fallback if no response sent
+        if not response_sent:
+            tg_client.send_message(chat_id, "🤔 I processed your message but have no response.")
+            log.warning("Agent completed without sending response")
 
     except Exception as e:
         log.error(f"Error handling message: {e}", exc_info=True)
