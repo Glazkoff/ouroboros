@@ -277,7 +277,7 @@ def handle_message(tg_client, chat_id: int, text: str, repo_dir: pathlib.Path, d
         tg_client.send_chat_action(chat_id, "typing")
 
         # Use real agent via workers module
-        log.info(f"Processing message with agent: {text[:50]}...")
+        log.info(f"💬 Processing message: {text[:100]}...")
 
         # Create task for agent
         task = {
@@ -288,19 +288,28 @@ def handle_message(tg_client, chat_id: int, text: str, repo_dir: pathlib.Path, d
             "_is_direct_chat": True,
         }
 
+        log.info(f"📋 Task created: id={task['id']}, type={task['type']}")
+
         # Get agent (lazy init)
+        log.info("🤖 Getting agent instance...")
         agent = workers_module._get_chat_agent()
+        log.info(f"✅ Agent ready: {type(agent).__name__}")
 
         # Process with agent
+        log.info("⚙️  Processing with agent.handle_task()...")
         events = agent.handle_task(task)
+        log.info(f"✅ Agent returned {len(events) if events else 0} events")
 
         # Process events from agent
         response_sent = False
+        all_event_types = []
+
         for event in events:
             event_type = event.get("type")
+            all_event_types.append(event_type)
 
-            # Log event
-            log.debug(f"Agent event: {event_type}")
+            # Log all events for debugging
+            log.info(f"📨 Agent event: {event_type} | {list(event.keys())}")
 
             # Send response to Telegram
             if event_type == "telegram_send":
@@ -318,15 +327,19 @@ def handle_message(tg_client, chat_id: int, text: str, repo_dir: pathlib.Path, d
             elif event_type == "llm_usage":
                 usage = event.get("usage", {})
                 state_module.update_budget_from_usage(usage)
-                log.debug(f"Budget updated: {usage}")
+                log.info(f"💰 Budget updated: prompt={usage.get('prompt_tokens')}, completion={usage.get('completion_tokens')}")
+
+        # Log all event types for debugging
+        log.info(f"📊 Total events: {len(events)}, types: {all_event_types}")
 
         # Fallback if no response sent
         if not response_sent:
-            tg_client.send_message(chat_id, "🤔 I processed your message but have no response.")
-            log.warning("Agent completed without sending response")
+            error_msg = f"🤔 Agent completed without response.\n\nEvents: {', '.join(all_event_types) or 'none'}"
+            tg_client.send_message(chat_id, error_msg)
+            log.warning(f"Agent completed without sending response. Events: {all_event_types}")
 
     except Exception as e:
-        log.error(f"Error handling message: {e}", exc_info=True)
+        log.error(f"❌ Error handling message: {e}", exc_info=True)
         tg_client.send_message(chat_id, f"❌ Error: {type(e).__name__}: {str(e)[:200]}")
 
 # ============================
