@@ -57,7 +57,7 @@ Telegram --> colab_launcher.py
                 control.py          -- restart, evolve, review
                 browser.py          -- Playwright (stealth)
                 review.py           -- multi-model review
-              llm.py                -- OpenRouter client
+              llm.py                -- OpenRouter/GLM client
               memory.py             -- scratchpad, identity, chat
               review.py             -- code metrics
               utils.py              -- utilities
@@ -74,7 +74,11 @@ Telegram --> colab_launcher.py
 3. Copy the **bot token**.
 4. You will use this token as `TELEGRAM_BOT_TOKEN` in the next step.
 
-### Step 2: Get API Keys
+### Step 2: Choose LLM Provider
+
+Ouroboros supports two LLM providers:
+
+#### Option A: OpenRouter (Default)
 
 | Key | Required | Where to get it |
 |-----|----------|-----------------|
@@ -84,6 +88,20 @@ Telegram --> colab_launcher.py
 | `GITHUB_TOKEN` | Yes | [github.com/settings/tokens](https://github.com/settings/tokens) -- Generate a classic token with `repo` scope |
 | `OPENAI_API_KEY` | No | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) -- Enables web search tool |
 | `ANTHROPIC_API_KEY` | No | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) -- Enables Claude Code CLI |
+
+#### Option B: GLM API (z.ai coding plan)
+
+| Key | Required | Where to get it |
+|-----|----------|-----------------|
+| `GLM_API_KEY` | Yes | z.ai console -- Your GLM coding plan API key |
+| `GLM_BASE_URL` | Yes | `https://api.z.ai/api/coding/paas/v4` (default) |
+| `GLM_MODEL` | Yes | `glm-4-plus` (default) or other GLM model |
+| `LLM_PROVIDER` | Yes | Set to `glm` to use GLM API |
+| `TELEGRAM_BOT_TOKEN` | Yes | [@BotFather](https://t.me/BotFather) on Telegram |
+| `TOTAL_BUDGET` | Yes | Your spending limit in USD |
+| `GITHUB_TOKEN` | Yes | [github.com/settings/tokens](https://github.com/settings/tokens) |
+
+**Note:** GLM API uses a different pricing model and may not support all OpenRouter features (like reasoning_effort).
 
 ### Step 3: Set Up Google Colab
 
