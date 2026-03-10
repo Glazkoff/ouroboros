@@ -134,7 +134,9 @@ def init_supervisor(repo_dir: pathlib.Path, data_dir: pathlib.Path):
     workers_module.MAX_WORKERS = int(os.environ.get("OUROBOROS_MAX_WORKERS", "3"))
     workers_module.SOFT_TIMEOUT_SEC = 600
     workers_module.HARD_TIMEOUT_SEC = 1800
-    log.info(f"✅ Workers module initialized (max_workers={workers_module.MAX_WORKERS})")
+    workers_module.BRANCH_DEV = os.environ.get("OUROBOROS_BRANCH", "ouroboros")
+    workers_module.BRANCH_STABLE = "ouroboros-stable"
+    log.info(f"✅ Workers module initialized (max_workers={workers_module.MAX_WORKERS}, branch={workers_module.BRANCH_DEV})")
 
     # Initialize state
     state_module.init_state()
