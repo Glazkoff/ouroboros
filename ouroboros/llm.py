@@ -131,7 +131,7 @@ class LLMClient:
             # GLM API configuration
             self._api_key = api_key or os.environ.get("GLM_API_KEY", "")
             self._base_url = base_url or os.environ.get("GLM_BASE_URL", "https://api.z.ai/api/coding/paas/v4")
-            self._default_model = os.environ.get("GLM_MODEL", "glm-4-plus")
+            self._default_model = os.environ.get("GLM_MODEL", "GLM-4.7")
             log.info(f"LLMClient initialized with GLM provider (base_url={self._base_url}, model={self._default_model})")
         else:
             # OpenRouter configuration (default)
@@ -346,7 +346,7 @@ class LLMClient:
     def default_model(self) -> str:
         """Return the default model for the current provider."""
         if self._provider == PROVIDER_GLM:
-            return os.environ.get("GLM_MODEL", "glm-4-plus")
+            return os.environ.get("GLM_MODEL", "GLM-4.7")
         else:
             return os.environ.get("OUROBOROS_MODEL", "anthropic/claude-sonnet-4.6")
 

@@ -48,13 +48,14 @@ def test_glm():
     print("-"*60)
 
     messages = [
-        {"role": "user", "content": "Hello! Please respond with a short greeting."}
+        {"role": "user", "content": "Hello! Please respond with a short greeting in Russian."}
     ]
 
     try:
         response, usage = client.chat(messages=messages, max_tokens=100)
-        print(f"✅ Response: {response.get('content', 'No content')[:200]}")
-        print(f"📊 Usage: {usage}")
+        content = response.get('content', 'No content')
+        print(f"✅ Response: {content[:500]}")
+        print(f"📊 Usage: prompt={usage.get('prompt_tokens')}, completion={usage.get('completion_tokens')}, cost=${usage.get('cost', 0):.6f}")
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback

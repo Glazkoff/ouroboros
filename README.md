@@ -95,7 +95,7 @@ Ouroboros supports two LLM providers:
 |-----|----------|-----------------|
 | `GLM_API_KEY` | Yes | z.ai console -- Your GLM coding plan API key |
 | `GLM_BASE_URL` | Yes | `https://api.z.ai/api/coding/paas/v4` (default) |
-| `GLM_MODEL` | Yes | `glm-4-plus` (default) or other GLM model |
+| `GLM_MODEL` | Yes | `GLM-4.7` (default) or other GLM model |
 | `LLM_PROVIDER` | Yes | Set to `glm` to use GLM API |
 | `TELEGRAM_BOT_TOKEN` | Yes | [@BotFather](https://t.me/BotFather) on Telegram |
 | `TOTAL_BUDGET` | Yes | Your spending limit in USD |
